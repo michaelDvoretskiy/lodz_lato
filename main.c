@@ -1,10 +1,8 @@
 #include <stdio.h>
 
 int main() {
-    char file_name[31];
-    printf("Enter name:\n");
-    scanf("%30s", file_name);
+    char message[31] = "Hello world\0";
 
-    printf("You entered: %s", file_name);
+    printf("The message is: %s", message);
     return 0;
 }

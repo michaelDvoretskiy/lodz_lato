@@ -1,21 +1,30 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int main() {
-    char file_name[31];
+    char* file_name = malloc(31);
     printf("Enter name:\n");
+    scanf("%30s", file_name);
 
-    int i = 0;
-    char c;
-    scanf("%c", &c);
-    while (c != '\n') {
-        file_name[i] = c;
-        // or *(file_name + i) = c;
-        scanf("%c", &c);
-        i++;
+    FILE *file = fopen(file_name, "r");
+    if (file == NULL) {
+        printf("Couldn't open file\n");
+        return 4;
     }
-    file_name[i] = '\0';
-    // or *(file_name + i) = '\0';
 
-    printf("You entered: %s", file_name);
+    int chr;
+    int is_empty = 1;
+    while ((chr = fgetc(file)) != EOF) {
+        is_empty = 0;
+        printf("%c", chr);
+    }
+
+    if (is_empty) {
+        printf("Nothing to show\n");
+        fclose(file);
+        return 0;
+    }
+
+    fclose(file);
     return 0;
 }

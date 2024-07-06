@@ -1,10 +1,10 @@
 #include <stdio.h>
 
 int main() {
-    char file_name[31];
-    printf("Enter name:\n");
-    scanf("%30s", file_name);
-
-    printf("You entered: %s", file_name);
+    int input;
+    printf("Enter numbers:\n");
+    while (scanf("%d", &input) == 1 && input != 0) {
+        printf("%d\n", input);
+    }
     return 0;
 }

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 struct point_t {
     int x;
@@ -13,10 +14,11 @@ struct point_t* set_values(struct point_t* p, int x, int y) {
 }
 
 int main() {
-    struct point_t p1;
-    struct point_t* p2 = set_values(&p1, 5, 6);
-    // p2 буде вказівником на p1, фактично це одна і та ж структура
-    printf("x=%d, y=%d\n", p1.x, p1.y);
-    printf("x=%d, y=%d\n", p2->x, p2->y);
+    struct point_t* p1 = malloc(sizeof(struct point_t));
+    p1->x = 10;
+    p1->y = 20;
+    printf("x=%d, y=%d\n", p1->x, p1->y);
+    p1 = set_values(p1, 1, 2);
+    printf("x=%d, y=%d\n", p1->x, p1->y);
     return 0;
 }

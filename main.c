@@ -1,10 +1,8 @@
 #include <stdio.h>
 
 int main() {
-    char file_name[31];
-    printf("Enter name:\n");
-    scanf("%30s", file_name);
+    float num = 2.0f / 3;
 
-    printf("You entered: %s", file_name);
+    printf("%.3f", num);
     return 0;
 }

@@ -1,36 +1,22 @@
 #include <stdio.h>
+#include <ctype.h>
 
-char* string_trim(char* word) {
-    int current_character = 0;
-
-    while ( *(word + current_character) == ' ') {
-        current_character++;
-    }
-    int start = current_character;
-
-    int end = start;
-    while ( *(word + current_character) != '\0') {
-        if ( *(word + current_character) != ' ') {
-            end = current_character;
+int isNumber(char* input) {
+    int current_character_number = 0;
+    while (*(input + current_character_number) != '\0') {
+        if (!isdigit(*(input + current_character_number))) {
+            return 0;
         }
-        current_character++;
+        current_character_number++;
     }
-    *(word + end + 1) = '\0';
-
-    return word + start;
+    return 1;
 }
 
-
-
 int main() {
-    char input[20] = "  Start and end  \0";
-    printf("-%s-\n", string_trim(input));
-    char input2[20] = "Start    \0";
-    printf("-%s-\n", string_trim(input2));
-    char input3[20] = "   end\0";
-    printf("-%s-\n", string_trim(input3));
-//    printf("Enter data:\n");
-//    read();
+    char input[20];
+    printf("Enter a string:");
+    scanf("%30s", input);
+    printf(isNumber(input) == 1 ? "it is a number" : "it is not a number");
 
     return 0;
 }

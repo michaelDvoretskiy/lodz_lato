@@ -1,23 +1,12 @@
 #include <stdio.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 struct message_t {
     char a;
     double b;
     int c;
 };
-
-void show_sizes(struct message_t* m) {
-    printf("char %d, double %d, int %d, struct message_t* %d, struct message_t %d\n", sizeof(char), sizeof(double), sizeof(int), sizeof(struct message_t*), sizeof(struct message_t));
-    printf("char variable %d, double variable %d, int variable %d, struct message_t* variable %d, struct message_t variable %d\n", sizeof(m->a), sizeof(m->b), sizeof(m->c), sizeof(m), sizeof(*m));
-}
-
-void show_areas() {
-    printf("Offset of a: %zu, size a: %d\n", offsetof(struct message_t, a), sizeof(char));
-    printf("Offset of b: %zu, size b: %d\n", offsetof(struct message_t, b), sizeof(double));
-    printf("Offset of c: %zu, size c: %d\n", offsetof(struct message_t, c), sizeof(int));
-    printf("Size of struct: %zu\n", sizeof(struct message_t));
-}
 
 int field_number(int byte_number) {
     if (byte_number >= offsetof(struct message_t, a) && byte_number < offsetof(struct message_t, a) + sizeof(char)) {
@@ -32,26 +21,99 @@ int field_number(int byte_number) {
     return 0;
 }
 
-void show_bytes(struct message_t* m) {
-    int bytes_quantity = sizeof(struct message_t);
-    char* byte = (char*)m;
-    for (int i = 0; i < bytes_quantity; i++) {
-        printf("%d %d %d %d\n", i, byte+i, *(byte+i), field_number(i));
+struct message_t* read_file(char* filename, int* size) {
+    if (filename == NULL){
+        return NULL;
     }
-    printf("\n");
+
+    FILE* f = fopen(filename, "rb");
+    if (f == NULL) {
+        return NULL;
+    }
+
+    // первый unsigned int в файле - это количество байт данных в файле (считая после этих данных)
+    int bytes_to_read_from_file;
+    int read_res = fread(&bytes_to_read_from_file, sizeof(unsigned int), 1, f);
+    if (read_res != 1) {
+        fclose(f);
+        printf("file is corrupted\n");
+        return NULL;
+    }
+
+    // если количество байт не делется нацело на размер структуры, то фигня
+    if (bytes_to_read_from_file % sizeof(struct message_t) != 0) {
+        fclose(f);
+        printf("file is corrupted\n");
+        return NULL;
+    }
+
+    // считаем количествво сообщений в файле
+    int number_of_messages = bytes_to_read_from_file / sizeof(struct message_t);
+    if (number_of_messages == 0) {
+        fclose(f);
+        printf("file is corrupted\n");
+        return NULL;
+    }
+
+    struct message_t* m = malloc(number_of_messages * sizeof(struct message_t));
+    if (m == NULL) {
+        fclose(f);
+        printf("Failed to allocate memory\n");
+        return NULL;
+    }
+
+    read_res = fread(m, sizeof(struct message_t), number_of_messages, f);
+    if (read_res != number_of_messages) {
+        fclose(f);
+        free(m);
+        printf("file is corrupted\n");
+        return NULL;
+    }
+
+    *size = number_of_messages;
+
+    return m;
+}
+
+char* read_message(struct message_t* m, int size) {
+    if (m == NULL || size <= 0) {
+        return NULL;
+    }
+
+    int bytes_quantity = sizeof(struct message_t);
+
+    char* message_text = malloc(size*11+1);
+    int message_cur_symbol_number = 0;
+    if (message_text == NULL) {
+        printf("Failed to allocate memory\n");
+        return NULL;
+    }
+    for (int i = 0; i < size; i++) {
+        char* chr = (char *) (m + i);
+        for (int j = 0; j < bytes_quantity; j++) {
+            if (field_number(j) == 0) {
+                *(message_text+message_cur_symbol_number) = *(chr+j);
+                message_cur_symbol_number++;
+            }
+        }
+    }
+    *(message_text+message_cur_symbol_number) = '\0';
+
+    return message_text;
 }
 
 int main() {
-    struct message_t m;
-    m.a = 'y';
-    m.b = 10.25f;
-    m.c = 1000;
-
-    show_sizes(&m);
-    printf("==========\n");
-    show_areas();
-    printf("==========\n");
-    show_bytes(&m);
+    char*  filename = "messages";
+    int number_of_messages = 0;
+    struct message_t* m = read_file(filename, &number_of_messages);
+    if (m != NULL) {
+        char* message_text = read_message(m, number_of_messages);
+        if (message_text != NULL) {
+            printf("%s\n", message_text);
+            free(message_text);
+        }
+        free(m);
+    }
 
     return 0;
 }

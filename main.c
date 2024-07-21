@@ -1,24 +1,35 @@
 #include <stdio.h>
 #include <string.h>
 
-union my_test_u {
+union int_bytes_u {
     int i;
-    float f;
-    char s[10];
+    unsigned char bytes[4];
 };
 
-void show(union my_test_u u) {
-    printf("int: %d, float %f, string %s\n", u.i, u.f, u.s);
+void look_bytes_without_union(int number) {
+    unsigned char* byte = (unsigned char*)&number;
+    for (int i = 0; i < 4; i++) {
+        printf("%d ", *(byte+i));
+    }
+    printf("\n");
+}
+
+void look_bytes_with_union(int number) {
+    union int_bytes_u u;
+    u.i = number;
+    for (int i = 0; i < 4; i++) {
+        printf("%d ", *(u.bytes+i));
+    }
+    printf("\n");
 }
 
 int main() {
-    union my_test_u u;
-    u.i = 10;
-    show(u);
-    u.f = 15.23f;
-    show(u);
-    strcpy(u.s, "Hello");
-    show(u);
+    int number = 125;
+    look_bytes_without_union(number);
+    look_bytes_with_union(number);
+
+    look_bytes_without_union(257);
+    look_bytes_with_union(125453);
 
     return 0;
 }

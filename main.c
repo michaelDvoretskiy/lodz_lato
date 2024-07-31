@@ -15,13 +15,25 @@ int* create_arr(int size) {
     return num;
 }
 
+int* copy_numbers(int* numbers, int size) {
+    int* new_num;
+    new_num = malloc(sizeof(int) * size);
+    if (new_num == NULL) {
+        return NULL;
+    }
+    for (int i = 0; i < size; i++) {
+        *(new_num + i) = *(numbers + i);
+    }
+
+    return new_num;
+}
+
 void show_numbers(int* numbers, int arr_size) {
     for (int i = 0; i < arr_size; i++) {
         printf("%d ", *(numbers + i));
     }
     printf("\n");
 }
-
 
 int main() {
     srand(time(NULL));
@@ -30,6 +42,11 @@ int main() {
         return 1;
     }
     show_numbers(nums, 10);
+
+    int* nums2 = copy_numbers(nums, 10);
+    show_numbers(nums2, 10);
+
     free(nums);
+    free(nums2);
     return 0;
 }

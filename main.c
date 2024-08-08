@@ -49,5 +49,7 @@ int main() {
         printf("============\n");
     }
 
+    destroy_queue(q);
+
     return 0;
 }

@@ -1,10 +1,30 @@
 #include <stdio.h>
+#include "matrix.h"
 
 int main() {
-    char file_name[31];
-    printf("Enter name:\n");
-    scanf("%30s", file_name);
+    int err;
+    struct image_t* img1 = read_image_from_file("image1.txt", &err);
+    if (err != 0) {
+        return 1;
+    }
+    show_image(img1);
 
-    printf("You entered: %s", file_name);
+    struct image_t* img2 = read_image_from_file("image2.txt", &err);
+    if (err != 0) {
+        return 1;
+    }
+    show_image(img2);
+
+    err = draw_image_on_image(img1, img2, 1, 3);
+    if (err != 0) {
+        return 1;
+    }
+    show_image(img1);
+
+    err = save_image_to_file(img1, "image3.txt");
+    if (err != 0) {
+        return 1;
+    }
+
     return 0;
 }

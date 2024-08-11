@@ -2,8 +2,10 @@
 #include "array.h"
 
 int main() {
-    int** multiple = create_arr(10, 10);
-    if (multiple == NULL) {
+    int** multiple;
+    int err;
+    create_arr(&multiple, 10, 10, &err);
+    if (err != 0) {
         return 1;
     }
 
@@ -14,6 +16,11 @@ int main() {
     }
 
     show_arr(multiple, 10, 10);
+
+    destroy_arr(&multiple, 10, &err);
+    if (err != 0) {
+        return 1;
+    }
 
     return 0;
 }

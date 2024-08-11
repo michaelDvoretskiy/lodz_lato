@@ -1,10 +1,16 @@
 #ifndef CODE_ARRAY_H
 #define CODE_ARRAY_H
 
-int** create_arr(int rows, int cols);
+struct matrix_t {
+    int** arr;
+    int rows;
+    int cols;
+};
 
-void show_arr(int** arr, int rows, int cols);
+struct matrix_t* create_matrix(int rows, int cols);
 
-void destroy_arr(int** arr, int rows);
+void show_matrix(struct matrix_t* m);
+
+void destroy_matrix(struct matrix_t*);
 
 #endif //CODE_ARRAY_H

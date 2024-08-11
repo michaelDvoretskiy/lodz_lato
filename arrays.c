@@ -71,3 +71,26 @@ void concat_arr2(short* arr1, int size1, short* arr2, int size2, short** new_arr
         *(*new_arr + size1 + i) = *(arr2 + i);
     }
 }
+
+void concat_arr3(short** arr1, int size1, short* arr2, int size2, int* err_code) {
+    *err_code = 0;
+    if (arr1 == NULL || *arr1 == NULL || arr2 == NULL) {
+        *err_code = 1;
+        return;
+    }
+    if (size1 <= 0 || size2 <= 0) {
+        *err_code = 2;
+        return;
+    }
+
+    short* new_arr = realloc(*arr1, sizeof(short) * (size1 + size2));
+    if (new_arr == NULL) {
+        *err_code = 3;
+        return;
+    }
+    *arr1 = new_arr;
+
+    for (int i = 0; i < size2; i++) {
+        *(*arr1 + size1 + i) = *(arr2 + i);
+    }
+}

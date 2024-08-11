@@ -47,6 +47,16 @@ int main() {
     }
     show_arr(arr4, 9);
 
+    concat_arr3(&arr2, 3, arr4, 9, &err);
+    if (err != 0) {
+        free(arr1);
+        free(arr2);
+        free(arr3);
+        free(arr4);
+        return 1;
+    }
+    show_arr(arr2, 12);
+
     free(arr1);
     free(arr2);
     free(arr3);

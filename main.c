@@ -1,40 +1,48 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int read_string(char** str) {
-    FILE* f = fopen("input.txt", "r");
-    if (f == NULL) {
-        return 1;
+
+char* read_string(int start_len, int step) {
+    int cur_str_len = start_len;
+    char* str = malloc(sizeof(char) * (cur_str_len + 1));
+    if (str == NULL) {
+        printf("Input error");
+        return NULL;
     }
 
-    int symbols_in_file = 0;
-    while (!feof(f)) {
-        fgetc(f);
-        symbols_in_file++;
+    printf("Enter string:\n");
+    char chr;
+    if (scanf("%c", &chr) != 1) {
+        printf("Input error");
+        return NULL;
     }
-
-    *str = malloc(sizeof(char) * (symbols_in_file + 1));
-    if (*str == NULL) {
-        return 2;
+    int i = 0;
+    while (chr != '\n') {
+        if (i >= cur_str_len) {
+            cur_str_len += step;
+            char* new_str = realloc(str, sizeof(char) * (cur_str_len + 1));
+            if (new_str == NULL) {
+                printf("Input error");
+                return NULL;
+            }
+            str = new_str;
+        }
+        *(str + i) = chr;
+        i++;
+        if (scanf("%c", &chr) != 1) {
+            printf("Input error");
+            return NULL;
+        }
     }
+    *(str + i) = '\0';
 
-    rewind(f);
-
-    for(int i = 0; i< symbols_in_file; i++) {
-        *(*str + i) = fgetc(f);
-    }
-
-    *(*str + symbols_in_file) = '\0';
-
-    return 0;
+    return str;
 }
 
+
 int main() {
-    char* input;
-    if (read_string(&input) != 0) {
-        return 1;
-    }
-    printf("We read from file:\n%s\n", input);
+    char* input = read_string(5, 3);
+    printf("You entered : %s\n", input);
     free(input);
 
     return 0;

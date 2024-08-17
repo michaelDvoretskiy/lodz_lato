@@ -1,15 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main() {
-    int max_len = 20;
+char* read_string(int max_len) {
     char* str = malloc(sizeof(char) * (max_len + 1));
 
     printf("Enter string:\n");
     char chr;
     if (scanf("%c", &chr) != 1) {
         printf("Input error");
-        return 1;
+        return NULL;
     }
     int i = 0;
     while (chr != '\n') {
@@ -18,15 +17,19 @@ int main() {
             i++;
         }
         if (scanf("%c", &chr) != 1) {
-            printf("Intup error");
-            return 1;
+            printf("Input error");
+            return NULL;
         }
     }
     *(str + i) = '\0';
 
-    printf("You entered : %s\n", str);
+    return str;
+}
 
-    free(str);
+int main() {
+    char* input = read_string(20);
+    printf("You entered : %s\n", input);
+    free(input);
 
     return 0;
 }

@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char* read_string(int max_len) {
-    char* str = malloc(sizeof(char) * (max_len + 1));
+int read_string(char** str, int max_len) {
+    *str = malloc(sizeof(char) * (max_len + 1));
 
     printf("Enter string:\n");
     char chr;
@@ -13,21 +13,24 @@ char* read_string(int max_len) {
     int i = 0;
     while (chr != '\n') {
         if (i < max_len) {
-            *(str + i) = chr;
+            *(*str + i) = chr;
             i++;
         }
         if (scanf("%c", &chr) != 1) {
             printf("Input error");
-            return NULL;
+            return 1;
         }
     }
-    *(str + i) = '\0';
+    *(*str + i) = '\0';
 
-    return str;
+    return 0;
 }
 
 int main() {
-    char* input = read_string(20);
+    char* input;
+    if (read_string(&input, 20)) {
+        return 1;
+    }
     printf("You entered : %s\n", input);
     free(input);
 

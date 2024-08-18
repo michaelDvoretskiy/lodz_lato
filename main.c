@@ -1,49 +1,56 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+struct student_v1_t {
+    char first_name[10];
+    char last_name[15];
+    int group_number;
+};
 
-char* read_string(int start_len, int step) {
-    int cur_str_len = start_len;
-    char* str = malloc(sizeof(char) * (cur_str_len + 1));
-    if (str == NULL) {
-        printf("Input error");
-        return NULL;
-    }
-
-    printf("Enter string:\n");
-    char chr;
-    if (scanf("%c", &chr) != 1) {
-        printf("Input error");
-        return NULL;
-    }
-    int i = 0;
-    while (chr != '\n') {
-        if (i >= cur_str_len) {
-            cur_str_len += step;
-            char* new_str = realloc(str, sizeof(char) * (cur_str_len + 1));
-            if (new_str == NULL) {
-                printf("Input error");
-                return NULL;
-            }
-            str = new_str;
-        }
-        *(str + i) = chr;
-        i++;
-        if (scanf("%c", &chr) != 1) {
-            printf("Input error");
-            return NULL;
-        }
-    }
-    *(str + i) = '\0';
-
-    return str;
-}
-
+struct student_v2_t {
+    char* first_name;
+    char* last_name;
+    int group_number;
+};
 
 int main() {
-    char* input = read_string(5, 3);
-    printf("You entered : %s\n", input);
-    free(input);
+    struct student_v1_t student1;
+    strcpy(student1.first_name, "Ivan");
+    strcpy(student1.last_name, "Dvoretskyi");
+    student1.group_number = 7;
+    printf("%s %s, group: %d\n", student1.first_name, student1.last_name, student1.group_number);
+    printf("==================\n");
+
+    struct student_v1_t* student2 = malloc(sizeof(struct student_v1_t));
+    strcpy(student2->first_name, "Mariia");
+    strcpy((*student2).last_name, "Dvoretska");
+    student2->group_number = 209;
+    printf("%s %s, group: %d\n", student2->first_name, student2->last_name, student2->group_number);
+    printf("==================\n");
+
+    struct student_v2_t student3;
+    student3.first_name = malloc(sizeof(char) * 10);
+    strcpy(student3.first_name, "Mikhailo");
+    student3.last_name = malloc(sizeof(char) * 15);
+    strcpy(student3.last_name, "Dvoretskyi");
+    student3.group_number = 408;
+    printf("%s %s, group: %d\n", student3.first_name, student3.last_name, student3.group_number);
+    printf("==================\n");
+    free(student3.first_name);
+    free(student3.last_name);
+
+    struct student_v2_t* student4 = malloc(sizeof(struct student_v2_t));
+    student4->first_name = malloc(sizeof(char) * 10);
+    strcpy(student4->first_name, "Svitlana");
+    student4->last_name = malloc(sizeof(char) * 15);
+    strcpy(student4->last_name, "Dvoretska");
+    student4->group_number = 408;
+    printf("%s %s, group: %d\n", student4->first_name, student4->last_name, student4->group_number);
+    printf("==================\n");
+    free(student4->first_name);
+    free(student4->last_name);
+    free(student4);
 
     return 0;
 }

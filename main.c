@@ -2,42 +2,40 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct student_t {
+struct person_t {
     char* first_name;
     char* last_name;
-    int group_number;
 };
 
+int extract_names(char* input, char** name1, char** name2)
+{
+    if (input == NULL) {
+        return 1;
+    }
+
+    *name1 = input;
+    int i = 0;
+    while (*(input + i) != '\0') {
+        if (*(input + i) == ' ') {
+            *(input + i) = '\0';
+            *name2 = input + i + 1;
+        }
+        i++;
+    }
+
+    return 0;
+}
+
 int main() {
-    struct student_t* students = malloc(sizeof(struct student_t) * 3);
-    students->first_name = malloc(sizeof(char) * 10);
-    strcpy(students->first_name, "Svitlana");
-    students->last_name = malloc(sizeof(char) * 15);
-    strcpy(students->last_name, "Dvoretska");
-    students->group_number = 408;
+    char* full_name = malloc(sizeof(char) * 15);
+    strcpy(full_name, "John Smith");
 
-    (students+1)->first_name = malloc(sizeof(char) * 10);
-    strcpy((students+1)->first_name, "Mariia");
-    (students+1)->last_name = malloc(sizeof(char) * 15);
-    strcpy((students+1)->last_name, "Dvoretska");
-    (students+1)->group_number = 208;
-
-    (*(students+2)).first_name = malloc(sizeof(char) * 10);
-    strcpy((*(students+2)).first_name, "Ivan");
-    (*(students+2)).last_name = malloc(sizeof(char) * 15);
-    strcpy((*(students+2)).last_name, "Dvoretskyi");
-    (*(students+2)).group_number = 7;
-
-    for (int i = 0; i < 3; i++) {
-        printf("%s %s, group: %d\n", (students+i)->first_name, (students+i)->last_name, (students+i)->group_number);
-        printf("==================\n");
+    struct person_t* person = malloc(sizeof(struct person_t));
+    if (extract_names(full_name, &(person->first_name), &(person->last_name)) != 0) {
+        return 1;
     }
 
-    for (int i = 0; i < 3; i++) {
-        free((students+i)->first_name);
-        free((students+i)->last_name);
-    }
-    free(students);
+    printf("%s %s", person->first_name, person->last_name);
 
     return 0;
 }

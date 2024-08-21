@@ -1,10 +1,17 @@
-#include <stdio.h>
+#include "functions.h"
 
 int main() {
-    char file_name[31];
-    printf("Enter name:\n");
-    scanf("%30s", file_name);
+    int (*operation)(int, int);
+    operation = sub;
 
-    printf("You entered: %s", file_name);
+    void (*shower)(int) = show2;
+
+    int res = operation(5, 10);
+    shower(res);
+
+    operation = add;
+    shower = show;
+    shower(operation(3, 5));
+
     return 0;
 }

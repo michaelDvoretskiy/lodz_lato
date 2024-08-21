@@ -18,3 +18,8 @@ void show2(int x) {
     printf("The result is: %d\n", x);
     printf("===========\n");
 }
+
+void make_job(int x, int y, int (*operation)(int, int), void (*display)(int)) {
+    int res = operation(x, y);
+    display(res);
+}

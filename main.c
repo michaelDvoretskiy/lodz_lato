@@ -29,8 +29,7 @@ int main() {
         return 1;
     }
 
-    int res = operations[show_type](x,y);
-    showers[show_type](res);
+    make_job(x, y, operations[operation_number], showers[show_type]);
 
     return 0;
 }

@@ -6,4 +6,6 @@ int sub(int x, int y);
 void show(int x);
 void show2(int x);
 
+void make_job(int x, int y, int (*operation)(int, int), void (*display)(int));
+
 #endif //CODE_FUNCTIONS_H

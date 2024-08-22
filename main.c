@@ -16,8 +16,8 @@ int main() {
         return 1;
     }
 
-    void (*sort_fun)(struct person_t*, int) = get_sorter(sort_type);
-    sort_fun(person_list, persons_count);
+    int (*compare_by)(struct person_t* p1, struct person_t* p2) = get_comparator(sort_type);
+    sort_persons(person_list, persons_count, compare_by);
     display_persons(person_list, persons_count);
 
     destroy_persons(person_list, persons_count);

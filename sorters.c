@@ -2,11 +2,11 @@
 #include <string.h>
 #include "person.h"
 
-void sort_by_name(struct person_t* persons, int size) {
+void sort_persons(struct person_t* persons, int size, int (*compare_fun)(struct person_t* person1, struct person_t* person2)) {
     struct person_t tmp;
     for (int i = 0; i < size; i++) {
         for (int j = i + 1; j < size; j++) {
-            if (strcmp((persons+i)->name, (persons+j)->name) > 0) {
+            if (compare_fun(persons+i, persons+j) > 0) {
                 tmp = *(persons+i);
                 *(persons+i) = *(persons+j);
                 *(persons+j) = tmp;
@@ -15,25 +15,19 @@ void sort_by_name(struct person_t* persons, int size) {
     }
 }
 
-void sort_by_age(struct person_t* persons, int size) {
-    struct person_t tmp;
-    for (int i = 0; i < size; i++) {
-        for (int j = i + 1; j < size; j++) {
-            if ((persons+i)->age > (persons+j)->age) {
-                tmp = *(persons+i);
-                *(persons+i) = *(persons+j);
-                *(persons+j) = tmp;
-            }
-        }
-    }
+int compare_by_name(struct person_t* person1, struct person_t* person2) {
+    return strcmp(person1->name, person2->name);
+}
+int compare_by_age(struct person_t* person1, struct person_t* person2) {
+    return person1->age - person2->age;
 }
 
-void (*get_sorter(int type))(struct person_t* persons, int size) {
-    void (*sorters[2])(struct person_t* persons, int size) = {sort_by_name, sort_by_age};
+int (*get_comparator(int type))(struct person_t* person1, struct person_t* person2) {
+    int (*comparators[2])(struct person_t* person1, struct person_t* person2) = {compare_by_name, compare_by_age};
 
     if (type != 0 && type != 1) {
         return NULL;
     }
 
-    return sorters[type];
+    return comparators[type];
 }

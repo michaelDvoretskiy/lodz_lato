@@ -4,5 +4,5 @@ project(code C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(code main.c
-        print.h
-        print.c)
+        calc.h
+        calc.c)

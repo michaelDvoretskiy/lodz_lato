@@ -42,7 +42,7 @@ int add(int x, int y) {
 // короткий код, сложнее понять, что происходит
 int add2(int appl1, int appl2) {
     while (appl2 != 0) {
-        unsigned long long carry = appl1 & appl2;
+        int carry = appl1 & appl2;
         appl1 = appl1 ^ appl2;
         appl2 = carry << 1;
     }

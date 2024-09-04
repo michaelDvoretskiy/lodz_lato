@@ -1,0 +1,4 @@
+obj_type    perim   area        centroid_x  centroid_y  feret_x feret_y
+C2          1234    34599.678   25          66           15     27
+A2          3456    27345.005   19          77           66     55
+D2          3577    19345.005   19          77           66     55

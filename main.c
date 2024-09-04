@@ -1,10 +1,23 @@
 #include <stdio.h>
+#include "list.h"
 
 int main() {
-    char file_name[31];
-    printf("Enter name:\n");
-    scanf("%30s", file_name);
+    FILE* f = fopen("input.txt", "r");
+    if (f == NULL) {
+        printf("cannot open file\n");
+        return 1;
+    }
 
-    printf("You entered: %s", file_name);
+    char buf[1024];
+    while (!feof(f)) {
+        int status = read_line(f, buf);
+        if (status != 0) {
+            printf("cannot read the line\n");
+            return 1;
+        }
+        printf("%s\n", buf);
+    }
+
+    fclose(f);
     return 0;
 }

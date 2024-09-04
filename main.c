@@ -3,7 +3,7 @@
 
 int main() {
     struct stack_t* my_stack;
-    if (stack_init(&my_stack, 3) != 0) {
+    if (stack_init(&my_stack) != 0) {
         printf("failed to create stack");
         return 1;
     }
@@ -25,7 +25,7 @@ int main() {
 
     stack_display(my_stack);
 
-    stack_free(my_stack);
+    stack_free(&my_stack);
 
     return 0;
 }

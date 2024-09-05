@@ -34,5 +34,9 @@ void free_header(struct header_t* hd);
 void free_list(struct list_t** list);
 
 int read_line(FILE* fp, char* line);
+int is_white_space(char chr);
+int count_words(char* line);
+char* get_word(char* line, int num);
+
 
 #endif //CODE_LIST_H

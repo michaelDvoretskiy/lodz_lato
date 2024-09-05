@@ -48,4 +48,6 @@ int is_int(char* word);
 int is_dbl(char* word);
 enum type_t get_type(char* word);
 
+void show_header(struct header_t* header);
+
 #endif //CODE_LIST_H

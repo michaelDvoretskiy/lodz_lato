@@ -3,6 +3,90 @@
 #include "list.h"
 
 int read_header(struct header_t* head, FILE* fp) {
+    if (fp == NULL) {
+        return 1;
+    }
+
+    rewind(fp);
+
+    char buf[1024];
+
+    int header_words_count = 0;
+    while (header_words_count == 0 && !feof(fp)) {
+        int status = read_line(fp, buf);
+        if (status != 0) {
+            printf("cannot read the header\n");
+            return 4;
+        }
+        header_words_count = count_words(buf);
+    }
+    if (header_words_count == 0) {
+        printf("cannot read the header\n");
+        return 4;
+    }
+
+    head->size = header_words_count;
+    head->types = NULL;
+    head->names = NULL;
+
+    head->names = malloc(head->size * sizeof(char*));
+    if (head->names == NULL) {
+        printf("failed to allocate memory\n");
+        free_header(head);
+        return 2;
+    }
+    for (int i = 0; i < header_words_count; i++) {
+        *(head->names + i) = NULL;
+    }
+    for (int i = 0; i < header_words_count; i++) {
+        char* word = get_word(buf, i);
+        if (word == NULL) {
+            printf("failed to allocate memory\n");
+            free_header(head);
+            return 2;
+        }
+        *(head->names + i) = word;
+    }
+
+    int line_words_count = 0;
+    while (line_words_count == 0 && !feof(fp)) {
+        int status = read_line(fp, buf);
+        if (status != 0) {
+            printf("cannot read the first line\n");
+            free_header(head);
+            return 4;
+        }
+        line_words_count = count_words(buf);
+    }
+    if (line_words_count == 0) {
+        printf("cannot read the first line\n");
+        free_header(head);
+        return 4;
+    }
+
+    if (header_words_count != line_words_count) {
+        printf("smth wrong with columns\n");
+        free_header(head);
+        return 4;
+    }
+
+    head->types = malloc(head->size * sizeof(enum type_t));
+    if (head->types == NULL) {
+        printf("failed to allocate memory\n");
+        free_header(head);
+        return 2;
+    }
+    for (int i = 0; i < line_words_count; i++) {
+        char* word = get_word(buf, i);
+        if (word == NULL) {
+            printf("failed to allocate memory\n");
+            free_header(head);
+            return 2;
+        }
+        *(head->types + i) = get_type(word);
+        free(word);
+    }
+
     return 0;
 }
 
@@ -11,7 +95,22 @@ int read_file(struct list_t** list, const char* fname) {
 }
 
 void free_header(struct header_t* hd) {
+    if (hd == NULL) {
+        return;
+    }
+    if (hd->types != NULL) {
+        free(hd->types);
+    }
+    for (int i = 0; i < hd->size; i++) {
+        if (*(hd->names + i) != NULL) {
+            free(*(hd->names + i));
+        }
+    }
+    if (hd->names != NULL) {
+        free(hd->names);
+    }
 
+    free(hd);
 }
 
 void free_list(struct list_t** list) {
@@ -151,4 +250,20 @@ enum type_t get_type(char* word) {
         return DBL;
     }
     return STR;
+}
+
+void show_header(struct header_t* header) {
+    if (header == NULL) {
+        return;
+    }
+    for (int i = 0; i < header->size; i++) {
+        printf("%s ", *(header->names + i));
+        if (*(header->types + i) == INT) {
+            printf("integer\n");
+        } else if (*(header->types + i) == DBL) {
+            printf("double\n");
+        } else if (*(header->types + i) == STR) {
+            printf("string\n");
+        }
+    }
 }

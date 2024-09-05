@@ -9,33 +9,13 @@ int main() {
         return 1;
     }
 
-    char buf[1024];
-    while (!feof(f)) {
-        int status = read_line(f, buf);
-        if (status != 0) {
-            printf("cannot read the line\n");
-            return 1;
-        }
-        printf("%s\n", buf);
-
-        int words_count = count_words(buf);
-        printf("%d\n", words_count);
-        for (int i = 0; i < words_count; i++) {
-            char* word = get_word(buf, i);
-            if (word != NULL) {
-                printf("%s ", word);
-                enum type_t word_type = get_type(word);
-                if (word_type == INT) {
-                    printf("integer\n");
-                } else if (word_type == DBL) {
-                    printf("double\n");
-                } else if (word_type == STR) {
-                    printf("string\n");
-                }
-                free(word);
-            }
-        }
+    struct header_t* head = malloc(sizeof(struct header_t));
+    if (read_header(head, f) != 0) {
+        return 1;
     }
+    show_header(head);
+
+    free_header(head);
 
     fclose(f);
     return 0;

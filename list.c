@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <ctype.h>
 #include "list.h"
 
 int read_header(struct header_t* head, FILE* fp) {
@@ -97,4 +98,57 @@ char* get_word(char* line, int num) {
     *(res + word_end - word_begin) = '\0';
 
     return res;
+}
+
+int is_int(char* word) {
+    int res = 1;
+    int i = 0;
+    while (*(word + i) != '\0') {
+        int is_ok = 0;
+        if (isdigit(*(word + i))) {
+            is_ok = 1;
+        } else if(i == 0 && *(word + i) == '-') {
+            is_ok = 1;
+        }
+        if (is_ok == 0) {
+            return 0;
+        }
+        i++;
+    }
+    return 1;
+}
+
+int is_dbl(char* word) {
+    int res = 1;
+    int i = 0;
+    int points_count = 0;
+    while (*(word + i) != '\0') {
+        int is_ok = 0;
+        if (isdigit(*(word + i))) {
+            is_ok = 1;
+        } else if(i == 0 && *(word + i) == '-') {
+            is_ok = 1;
+        } else if(*(word + i) == '.') {
+            is_ok = 1;
+            points_count++;
+            if (points_count > 1) {
+                return 0;
+            }
+        }
+        if (is_ok == 0) {
+            return 0;
+        }
+        i++;
+    }
+    return 1;
+}
+
+enum type_t get_type(char* word) {
+    if (is_int(word) == 1) {
+        return INT;
+    }
+    if (is_dbl(word) == 1) {
+        return DBL;
+    }
+    return STR;
 }

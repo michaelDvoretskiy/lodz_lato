@@ -23,7 +23,15 @@ int main() {
         for (int i = 0; i < words_count; i++) {
             char* word = get_word(buf, i);
             if (word != NULL) {
-                printf("%s\n", word);
+                printf("%s ", word);
+                enum type_t word_type = get_type(word);
+                if (word_type == INT) {
+                    printf("integer\n");
+                } else if (word_type == DBL) {
+                    printf("double\n");
+                } else if (word_type == STR) {
+                    printf("string\n");
+                }
                 free(word);
             }
         }

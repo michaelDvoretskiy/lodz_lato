@@ -3,6 +3,12 @@
 
 #include <stdio.h>
 
+enum type_t {
+    INT,
+    DBL,
+    STR
+};
+
 struct list_t {
     struct node_t* head;
     struct node_t* tail;
@@ -38,5 +44,8 @@ int is_white_space(char chr);
 int count_words(char* line);
 char* get_word(char* line, int num);
 
+int is_int(char* word);
+int is_dbl(char* word);
+enum type_t get_type(char* word);
 
 #endif //CODE_LIST_H

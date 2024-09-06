@@ -49,5 +49,6 @@ int is_dbl(char* word);
 enum type_t get_type(char* word);
 
 void show_header(struct header_t* header);
+void show_list(struct list_t* list);
 
 #endif //CODE_LIST_H

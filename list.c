@@ -35,7 +35,7 @@ int read_header(struct header_t* head, FILE* fp) {
     head->names = malloc(head->size * sizeof(char*));
     if (DEBUG == 1) printf("allocated %lu for the names*\n", head->size * sizeof(char*));
     if (head->names == NULL) {
-        printf("failed to allocate memory\n");
+        printf("failed to allocate memory 1\n");
         free_header(head);
         return 2;
     }
@@ -45,7 +45,7 @@ int read_header(struct header_t* head, FILE* fp) {
     for (unsigned int i = 0; i < header_words_count; i++) {
         char* word = get_word(buf, (int) i);
         if (word == NULL) {
-            printf("failed to allocate memory\n");
+            printf("failed to allocate memory 2\n");
             free_header(head);
             return 2;
         }
@@ -77,7 +77,7 @@ int read_header(struct header_t* head, FILE* fp) {
     head->types = malloc(head->size * sizeof(enum type_t));
     if (DEBUG == 1) printf("allocated %lu for the types*\n", head->size * sizeof(enum type_t));
     if (head->types == NULL) {
-        printf("failed to allocate memory\n");
+        printf("failed to allocate memory 3\n");
         free_header(head);
         return 2;
     }
@@ -92,7 +92,7 @@ int read_header(struct header_t* head, FILE* fp) {
 }
 
 int read_file(struct list_t** list, const char* fname) {
-    if (fname == NULL) {
+    if (list == NULL || fname == NULL) {
         return 1;
     }
 
@@ -102,52 +102,35 @@ int read_file(struct list_t** list, const char* fname) {
         return 3;
     }
 
-    struct header_t* header = malloc(sizeof(struct header_t));
-    if (DEBUG == 1) printf("allocated %lu for the header\n", sizeof(struct header_t));
-    if (header == NULL) {
-        printf("failed to allocate memory\n");
+    *list = malloc(sizeof(struct list_t));
+    if (DEBUG == 1) printf("allocated %lu for the list\n", sizeof(struct list_t));
+    if (*list == NULL) {
+        printf("failed to allocate memory 4\n");
+        fclose(fp);
         return 2;
     }
-    int read_header_status = read_header(header, fp);
+    (*list)->head = NULL;
+    (*list)->tail = NULL;
+    (*list)->header = NULL;
+
+    (*list)->header = malloc(sizeof(struct header_t));
+    if (DEBUG == 1) printf("allocated %lu for the header\n", sizeof(struct header_t));
+    if ((*list)->header == NULL) {
+        free_list(list);
+        printf("failed to allocate memory 5\n");
+        fclose(fp);
+        return 2;
+    }
+    int read_header_status = read_header((*list)->header, fp);
     if (read_header_status != 0) {
-        free_header(header);
+        free_list(list);
+        fclose(fp);
         return read_header_status;
     }
 
     rewind(fp);
 
     char buf[1024];
-    int rows_count = 0;
-    while (!feof(fp)) {
-        int status = read_line(fp, buf);
-        if (status != 0) {
-            printf("cannot read the line\n");
-            return 4;
-        }
-        int row_words_count = count_words(buf);
-        if (row_words_count != 0) {
-            rows_count++;
-        }
-    }
-
-    *list = malloc(rows_count * sizeof(struct list_t));
-    if (DEBUG == 1) printf("allocated %lu for the list\n", rows_count * sizeof(struct list_t));
-    if (*list == NULL) {
-        free_header(header);
-        printf("failed to allocate memory\n");
-        return 2;
-    }
-
-    for (int i = 0; i < rows_count-1; i++) {
-        (*list+i)->header = header;
-        (*list+i)->head = NULL;
-        (*list+i)->tail = NULL;
-    }
-    (*list+rows_count-1)->header = NULL;
-    (*list+rows_count-1)->head = NULL;
-    (*list+rows_count-1)->tail = NULL;
-
-    rewind(fp);
 
     int current_line_number = 0;
     while (!feof(fp)) {
@@ -155,70 +138,72 @@ int read_file(struct list_t** list, const char* fname) {
         if (status != 0) {
             printf("cannot read the line\n");
             free_list(list);
-            free_header(header);
+            fclose(fp);
             return 4;
         }
+
         unsigned int line_words_count = count_words(buf);
         if (line_words_count > 0) {
             if (current_line_number > 0) {
-                if (header->size != line_words_count) {
+                if ((*list)->header->size != line_words_count) {
                     printf("smth wrong with columns\n");
                     free_list(list);
-                    free_header(header);
+                    fclose(fp);
                     return 4;
                 }
 
-                struct list_t* current_list = (*list + current_line_number - 1);
+                struct node_t* new_row = malloc(sizeof(struct node_t));
+                if (new_row == NULL) {
+                    free_list(list);
+                    printf("failed to allocate memory 6\n");
+                    fclose(fp);
+                    return 2;
+                }
 
-                for (unsigned int i = 0; i < header->size; i++) {
+                new_row->prev = (*list)->tail;
+                new_row->next = NULL;
+
+                if ((*list)->tail != NULL) {
+                    (*list)->tail->next = new_row;
+                }
+                (*list)->tail = new_row;
+
+                if ((*list)->head == NULL) {
+                    (*list)->head = new_row;
+                }
+
+                new_row->vals = malloc(sizeof(union val_t) * (*list)->header->size);
+                if (DEBUG == 1) printf("allocated %lu for the node vals\n", sizeof(union val_t) * (*list)->header->size);
+                if (new_row->vals == NULL) {
+                    free_list(list);
+                    printf("failed to allocate memory 7\n");
+                    fclose(fp);
+                    return 2;
+                }
+
+                for (unsigned int i = 0; i < (*list)->header->size; i++) {
+                    (new_row->vals + i)->as_str = NULL;
+                }
+
+                for (unsigned int i = 0; i < (*list)->header->size; i++) {
                     char* word = get_word(buf, (int)i);
                     if (word == NULL) {
-                        printf("failed to allocate memory\n");
+                        printf("failed to allocate memory 8\n");
                         free_list(list);
-                        free_header(header);
-                        return 2;
-                    }
-                    struct node_t* new_node = malloc(sizeof(struct node_t));
-                    if (DEBUG == 1) printf("allocated %lu for the node\n", sizeof(struct node_t));
-                    if (new_node == NULL) {
-                        free_list(list);
-                        free_header(header);
-                        return 2;
-                    }
-                    new_node->vals = malloc(sizeof(union val_t));
-                    if (DEBUG == 1) printf("allocated %lu for the node val\n", sizeof(union val_t));
-                    if (new_node->vals == NULL) {
-                        free(new_node);
-                        free_list(list);
-                        free_header(header);
+                        fclose(fp);
                         return 2;
                     }
 
-                    new_node->prev = current_list->tail;
-                    new_node->next = NULL;
-
-                    if (current_list->tail != NULL) {
-                        current_list->tail->next = new_node;
-                    }
-                    current_list->tail = new_node;
-
-                    if (current_list->head == NULL) {
-                        current_list->head = new_node;
-                    }
-//                    printf("Node %d %d %d\n", new_node, new_node->prev, new_node->next);
-//                    printf("list %d %d %d\n", current_list, current_list->head, current_list->tail);
-//                    printf("Prev node %d %d %d\n", new_node->prev, new_node->prev == NULL ? 0 : new_node->prev->prev, new_node->prev == NULL ? 0 : new_node->prev->next);
-
-                    if (*(header->types + i) == INT) {
-                        new_node->vals->as_int = atoi(word);
+                    if (*((*list)->header->types + i) == INT) {
+                        (new_row->vals+i)->as_int = atoi(word);
                         free(word);
-                    } else if (*(header->types + i) == DBL) {
+                    } else if (*((*list)->header->types + i) == DBL) {
                         double val;
                         sscanf(word, "%lf", &val);
-                        new_node->vals->as_double = val;
+                        (new_row->vals+i)->as_double = val;
                         free(word);
                     } else {
-                        new_node->vals->as_str = word;
+                        (new_row->vals+i)->as_str = word;
                     }
                 }
             }
@@ -236,6 +221,7 @@ void free_header(struct header_t* hd) {
     }
     if (hd->types != NULL) {
         free(hd->types);
+        hd->types = NULL;
     }
     if (hd->names != NULL) {
         for (unsigned int i = 0; i < hd->size; i++) {
@@ -244,6 +230,7 @@ void free_header(struct header_t* hd) {
             }
         }
         free(hd->names);
+        hd->names = NULL;
     }
 
 //    free(hd);
@@ -253,22 +240,27 @@ void free_list(struct list_t** list) {
     if (*list == NULL) {
         return;
     }
-    int i = 0;
-    while ((*list+i)->header != NULL) {
-        struct node_t* cur_node = (*list+i)->head;
-        int cur_node_number = 0;
-        while (cur_node != NULL) {
-            enum type_t cur_node_type = *((*list+i)->header->types + cur_node_number);
-            if (cur_node_type == STR) {
-                free(cur_node->vals->as_str);
+    struct node_t* cur_row = (*list)->head;
+    while (cur_row != NULL) {
+        if (cur_row->vals != NULL) {
+            for (unsigned int i = 0; i < (*list)->header->size; i++) {
+                enum type_t cur_val_type = *((*list)->header->types + i);
+                if (cur_val_type == STR && (cur_row->vals + i)->as_str != NULL) {
+                    free((cur_row->vals + i)->as_str);
+                }
             }
-            struct node_t* next_node = cur_node->next;
-            free(cur_node);
-            cur_node = next_node;
-            cur_node_number++;
+            free(cur_row->vals);
         }
-        i++;
+        struct node_t* next_row = cur_row->next;
+        free(cur_row);
+        cur_row = next_row;
     }
+
+    if ((*list)->header != NULL) {
+        free_header((*list)->header);
+        free((*list)->header);
+    }
+
     free(*list);
 }
 
@@ -505,26 +497,24 @@ void show_list(struct list_t* list) {
     if (list == NULL) {
         return;
     }
-    int i = 0;
-    while ((list+i)->header != NULL) {
-        struct node_t* cur_node = (list+i)->head;
-        int cur_node_number = 0;
-        while (cur_node != NULL) {
-            enum type_t cur_node_type = *((list+i)->header->types + cur_node_number);
-            printf("%s:", *((list+i)->header->names + cur_node_number));
-            if (cur_node_type == STR) {
-                printf("%s ", cur_node->vals->as_str);
+    struct node_t* cur_row = list->head;
+    while (cur_row != NULL) {
+        if (cur_row->vals != NULL) {
+            for (unsigned int i = 0; i < list->header->size; i++) {
+                enum type_t cur_val_type = *(list->header->types + i);
+                printf("%s:", *(list->header->names + i));
+                if (cur_val_type == STR) {
+                    printf("%s ", (cur_row->vals + i)->as_str);
+                }
+                if (cur_val_type == INT) {
+                    printf("%d ", (cur_row->vals + i)->as_int);
+                }
+                if (cur_val_type == DBL) {
+                    printf("%lf ", (cur_row->vals + i)->as_double);
+                }
             }
-            if (cur_node_type == INT) {
-                printf("%d ", cur_node->vals->as_int);
-            }
-            if (cur_node_type == DBL) {
-                printf("%lf ", cur_node->vals->as_double);
-            }
-            cur_node = cur_node->next;
-            cur_node_number++;
+            printf("\n");
         }
-        printf("\n");
-        i++;
+        cur_row = cur_row->next;
     }
 }

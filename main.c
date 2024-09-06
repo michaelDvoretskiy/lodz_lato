@@ -17,6 +17,6 @@ int main() {
     }
     show_header(list->header);
     show_list(list);
-    free_list(&list);
+//    free_list(&list);
     return 0;
 }

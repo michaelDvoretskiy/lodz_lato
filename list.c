@@ -2,8 +2,10 @@
 #include <ctype.h>
 #include "list.h"
 
+#define DEBUG 0
+
 int read_header(struct header_t* head, FILE* fp) {
-    if (fp == NULL && head == NULL) {
+    if (fp == NULL || head == NULL) {
         return 1;
     }
 
@@ -31,6 +33,7 @@ int read_header(struct header_t* head, FILE* fp) {
     head->names = NULL;
 
     head->names = malloc(head->size * sizeof(char*));
+    if (DEBUG == 1) printf("allocated %lu for the names*\n", head->size * sizeof(char*));
     if (head->names == NULL) {
         printf("failed to allocate memory\n");
         free_header(head);
@@ -72,20 +75,17 @@ int read_header(struct header_t* head, FILE* fp) {
     }
 
     head->types = malloc(head->size * sizeof(enum type_t));
+    if (DEBUG == 1) printf("allocated %lu for the types*\n", head->size * sizeof(enum type_t));
     if (head->types == NULL) {
         printf("failed to allocate memory\n");
         free_header(head);
         return 2;
     }
     for (unsigned int i = 0; i < line_words_count; i++) {
-        char* word = get_word(buf, (int)i);
-        if (word == NULL) {
-            printf("failed to allocate memory\n");
-            free_header(head);
-            return 2;
-        }
-        *(head->types + i) = get_type(word);
-        free(word);
+        int word_start;
+        int word_stop = 0;
+        get_word_v2(buf, (int)i, &word_start, &word_stop);
+        *(head->types + i) = get_type_v2(buf, word_start, word_stop);
     }
 
     return 0;
@@ -103,6 +103,7 @@ int read_file(struct list_t** list, const char* fname) {
     }
 
     struct header_t* header = malloc(sizeof(struct header_t));
+    if (DEBUG == 1) printf("allocated %lu for the header\n", sizeof(struct header_t));
     if (header == NULL) {
         printf("failed to allocate memory\n");
         return 2;
@@ -130,6 +131,7 @@ int read_file(struct list_t** list, const char* fname) {
     }
 
     *list = malloc(rows_count * sizeof(struct list_t));
+    if (DEBUG == 1) printf("allocated %lu for the list\n", rows_count * sizeof(struct list_t));
     if (*list == NULL) {
         free_header(header);
         printf("failed to allocate memory\n");
@@ -177,12 +179,14 @@ int read_file(struct list_t** list, const char* fname) {
                         return 2;
                     }
                     struct node_t* new_node = malloc(sizeof(struct node_t));
+                    if (DEBUG == 1) printf("allocated %lu for the node\n", sizeof(struct node_t));
                     if (new_node == NULL) {
                         free_list(list);
                         free_header(header);
                         return 2;
                     }
                     new_node->vals = malloc(sizeof(union val_t));
+                    if (DEBUG == 1) printf("allocated %lu for the node val\n", sizeof(union val_t));
                     if (new_node->vals == NULL) {
                         free(new_node);
                         free_list(list);
@@ -233,16 +237,16 @@ void free_header(struct header_t* hd) {
     if (hd->types != NULL) {
         free(hd->types);
     }
-    for (unsigned int i = 0; i < hd->size; i++) {
-        if (*(hd->names + i) != NULL) {
-            free(*(hd->names + i));
-        }
-    }
     if (hd->names != NULL) {
+        for (unsigned int i = 0; i < hd->size; i++) {
+            if (*(hd->names + i) != NULL) {
+                free(*(hd->names + i));
+            }
+        }
         free(hd->names);
     }
 
-    free(hd);
+//    free(hd);
 }
 
 void free_list(struct list_t** list) {
@@ -338,6 +342,7 @@ char* get_word(char* line, int num) {
     }
 
     char* res = malloc((word_end - word_begin + 1) * sizeof(char));
+    if (DEBUG == 1) printf("allocated %ld for the word\n", (word_end - word_begin + 1) * sizeof(char));
     if (res == NULL) {
         return NULL;
     }
@@ -395,6 +400,86 @@ enum type_t get_type(char* word) {
         return INT;
     }
     if (is_dbl(word) == 1) {
+        return DBL;
+    }
+    return STR;
+}
+
+void get_word_v2(char* line, int num, int* start, int* stop) {
+    int cur_word = 0;
+    int i = 0;
+    char prev_chr = ' ';
+    int found = 0;
+
+    while (*(line + i) != '\0') {
+        char current_chr = *(line + i);
+        if (is_white_space(current_chr) == 0 && is_white_space(prev_chr) == 1) {
+            cur_word++;
+        }
+        if (cur_word == num + 1) {
+            found = 1;
+            break;
+        }
+        prev_chr = *(line + i);
+        i++;
+    }
+
+    if (found == 0) {
+        return;
+    }
+
+    int word_begin = i;
+    int word_end = i;
+    while (*(line + word_end) != '\0' && is_white_space(*(line + word_end)) == 0) {
+        word_end++;
+    }
+
+    *start = word_begin;
+    *stop = word_end;
+}
+
+int is_int_v2(char* line, int start, int stop) {
+    for (int i = start; i < stop; i++) {
+        int is_ok = 0;
+        if (isdigit(*(line + i))) {
+            is_ok = 1;
+        } else if(i == start && *(line + i) == '-') {
+            is_ok = 1;
+        }
+        if (is_ok == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int is_dbl_v2(char* line, int start, int stop) {
+    int points_count = 0;
+    for (int i = start; i < stop; i++) {
+        int is_ok = 0;
+        if (isdigit(*(line + i))) {
+            is_ok = 1;
+        } else if(i == start && *(line + i) == '-') {
+            is_ok = 1;
+        } else if(*(line + i) == '.') {
+            is_ok = 1;
+            points_count++;
+            if (points_count > 1) {
+                return 0;
+            }
+        }
+        if (is_ok == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+enum type_t get_type_v2(char* line, int start, int stop) {
+    if (is_int_v2(line, start, stop) == 1) {
+        return INT;
+    }
+    if (is_dbl_v2(line, start, stop) == 1) {
         return DBL;
     }
     return STR;

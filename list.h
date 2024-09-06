@@ -43,10 +43,15 @@ int read_line(FILE* fp, char* line);
 int is_white_space(char chr);
 int count_words(char* line);
 char* get_word(char* line, int num);
+void get_word_v2(char* line, int num, int* start, int* stop);
 
 int is_int(char* word);
 int is_dbl(char* word);
 enum type_t get_type(char* word);
+
+int is_int_v2(char* line, int start, int stop);
+int is_dbl_v2(char* line, int start, int stop);
+enum type_t get_type_v2(char* line, int start, int stop);
 
 void show_header(struct header_t* header);
 void show_list(struct list_t* list);
